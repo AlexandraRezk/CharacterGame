@@ -5,12 +5,16 @@ var HEIGHT = 500;
 var WIDTH = 500;
 var timeWhenGameStarted = Date.now(); //return time in ms
 
+var paused = false;
+
 //loading the images in memory once
 var Img = {};
 Img.player = new Image();
 Img.player.src = "img/player.png";
-Img.enemy = new Image();
-Img.enemy.src = "img/enemy.png";
+Img.bat = new Image();
+Img.bat.src = "img/bat.png";
+Img.bee = new Image();
+Img.bee.src = "img/bee.png";
 
 
 testCollisionRectRect = function(rect1,rect2){
@@ -18,43 +22,48 @@ testCollisionRectRect = function(rect1,rect2){
 }
 
 document.onkeydown = function(event){
-        if(event.keyCode === 39) {       //d
+        if(event.keyCode === 39) {       //right arrow
                 player.pressingRight = true;
 			}
-        else if(event.keyCode === 40) {   //s
+        else if(event.keyCode === 40) {   //down arrow
                 player.pressingDown = true;
 			}
-        else if(event.keyCode === 37){ //a
+        else if(event.keyCode === 37){ //left arrow
                 player.pressingLeft = true;
 			}
-        else if(event.keyCode === 38){ // w
+        else if(event.keyCode === 38){ //up arrow
                 player.pressingUp = true;
+			}
+		else if(event.keyCode === 80){ //p
+				paused = !paused;
 			}
 }
 
 document.onkeyup = function(event){
-        if(event.keyCode === 39) {       //d
+        if(event.keyCode === 39) {       //right arrow
                 player.pressingRight = false;
 			}
-        else if(event.keyCode === 40) {   //s
+        else if(event.keyCode === 40) {   //down arrow
                 player.pressingDown = false;
 			}
-        else if(event.keyCode === 37){ //a
+        else if(event.keyCode === 37){ //left arrow
                 player.pressingLeft = false;
 			}
-        else if(event.keyCode === 38){ // w
+        else if(event.keyCode === 38){ //up arrow
                 player.pressingUp = false;
 			}
 }
 
 
 update = function(){
+	if(paused){
+		ctx.fillText('Paused',WIDTH/2,HEIGHT/2);
+		return;
+	}
+	
 	ctx.clearRect(0,0,WIDTH,HEIGHT);
 	currentMap.draw();
-	for(var key in enemyList){
-		enemyList[key].update();
-		
-	}
+	Enemy.update();
 	player.update();
 	ctx.fillText(player.hp + " Hp",0,30);
 }
@@ -77,9 +86,9 @@ Maps = function(id,imgSrc,width,height){
 currentMap = Maps('field','img/map.png',1280,960);
 
 player = Player();
-Enemy('E1',150,350,10,15,64,64);
-Enemy('E2',250,350,10,-15,64,64);
-Enemy('E3',250,150,10,-5,64,64);
+Enemy('E1',150,350,3,3,64,64,Img.bat);
+Enemy('E2',250,350,3,3,64,64,Img.bee);
+Enemy('E3',250,150,3,3,64,64,Img.bat);
 
 setInterval(update,40);
 

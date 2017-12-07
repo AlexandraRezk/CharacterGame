@@ -1,12 +1,12 @@
 var player;
-var enemyList = {};
+
 	
 Entity = function (type,id,x,y,spdX,spdY,width,height,img){
 	var self = {
 	type:type,
 	x:x,
-	spdX:spdX,
 	y:y,
+	spdX:spdX,
 	spdY:spdY,
 	width:width,
 	height:height,
@@ -16,6 +16,7 @@ Entity = function (type,id,x,y,spdX,spdY,width,height,img){
 	self.update = function(){
 		self.updatePosition();
 		self.draw();
+		self.spriteAnimCounter += 0.2;
 	}
 	self.updatePosition = function (){
 	
@@ -29,6 +30,7 @@ Entity = function (type,id,x,y,spdX,spdY,width,height,img){
 		self.spdY = -self.spdY
 		}
 }
+	self.spriteAnimCounter = 0;
 self.draw = function(){
 	ctx.save();
 	var x = self.x - player.x; //offset for player X
@@ -39,7 +41,23 @@ self.draw = function(){
 	
 	x -= self.width/2;
 	y -= self.height/2;
-	ctx.drawImage(self.img,0,0,self.img.width,self.img.height,x,y,self.width,self.height);
+	
+	var frameWidth = self.img.width/3;
+	var frameHeight = self.img.height/4;
+	
+	var directionMod = 3; //draw right
+	if(player.pressingDown && y < currentMap.height - self.height){
+		directionMod = 2;
+	} //down
+	if(player.pressingLeft > 0){
+		directionMod = 1;
+	} //left
+	if(player.pressingUp && y > 0){
+		directionMod = 0;
+	} //up
+	
+	var walkingMod = Math.floor(self.spriteAnimCounter % 3);
+	ctx.drawImage(self.img,walkingMod*frameWidth,directionMod*frameHeight,frameWidth,frameHeight,x,y,self.width,self.height);
 	
 	ctx.restore();
 }
@@ -68,7 +86,7 @@ self.testCollision = function (entity2){ //return if colliding (true/false)
 }
 
 Player = function (){
-	var self = Entity('player','myID',50,40,30,5,50,70,Img.player);
+	var self = Entity('player','myID',50,40,0,0,50,70,Img.player);
 	
 	self.updatePosition = function(){
 		if(self.pressingRight){
@@ -117,9 +135,23 @@ Player = function (){
 	return self;
 }
 
-Enemy = function (id,x,y,spdX,spdY,width,height){
-	var self = Entity('enemy',id,x,y,spdX,spdY,width,height,Img.enemy);
+Enemy = function (id,x,y,spdX,spdY,width,height,img){
 	
+	var self = Entity('enemy',id,x,y,spdX,spdY,width,height,img);
+		/*self.updatePosition = function (){
+			var diffX = player.x - self.x;
+			var diffY = player.y - self.y;
+			 if (diffX > 0) {
+				 self.x += 3;
+			 } else{
+				 self.x -= 3;
+			 }
+			if (diffY > 0) {
+				 self.y += 3;
+			 } else{
+				 self.y -= 3;
+			 }
+		}//Makes the enemies follow the character*/
 	var super_update = self.update;
 	self.update = function(){
 		super_update();
@@ -128,5 +160,13 @@ Enemy = function (id,x,y,spdX,spdY,width,height){
 			player.hp = player.hp - 1;
 		}
 	}
-	enemyList[id] = self;
+	Enemy.list[id] = self;
+}
+
+Enemy.list = {};
+Enemy.update = function(){
+	for(var key in Enemy.list){
+		Enemy.list[key].update();
+		
+	}
 }
